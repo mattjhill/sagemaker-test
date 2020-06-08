@@ -38,7 +38,7 @@ if __name__ == '__main__':
 
     parser.add_argument('--hosts',type=list,default=json.loads(os.environ.get('SM_HOSTS')))
     parser.add_argument('--current-host',type=str,default=os.environ.get('SM_CURRENT_HOST'))
-    parser.add_argument('--train',type=str,required=False,default=os.environ.get('SM_CHANNEL_TRAIN'))
+    parser.add_argument('--train',type=str,required=False,default=os.environ.get('SM_CHANNEL_TRAINING'))
     parser.add_argument('--validation',type=str,required=False,default=os.environ.get('SM_CHANNEL_VALIDATION'))
     parser.add_argument('--eval',type=str,required=False,default=os.environ.get('SM_CHANNEL_EVAL'))
     parser.add_argument('--model_dir',type=str,required=True,help='The directory where the model will be stored.')

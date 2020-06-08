@@ -101,7 +101,7 @@ def main(args):
         model.compile(loss=loss_function, optimizer="adam", metrics=[tf.keras.metrics.SparseCategoricalAccuracy(name='train_accuracy')])
 
     model_checkpoint = tf.keras.callbacks.ModelCheckpoint(
-        f'{data.model_output_dir}/instacart_transformer.weights', monitor='loss', verbose=1, save_best_only=True,
+        f'{args.model_output_dir}/instacart_transformer.weights', monitor='loss', verbose=1, save_best_only=True,
         save_weights_only=True, mode='auto', save_freq='epoch'
     )
 

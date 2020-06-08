@@ -33,27 +33,27 @@ def main(args):
     last_orders['product_id'] = product_id_max + 1
     product_id_max += 1
 
-  orders = pandas.concat([first_orders, orders, last_orders])
-  orders = orders.sort_values(by=['user_id', 'order_number', 'add_to_cart_order'])
-  orders['add_to_cart_order'] += 1
-  orders = orders.set_index(['user_id', 'add_to_cart_order'])
-  orders = orders[['product_id', 'days_since_first_order', 'order_dow', 'order_hour_of_day']]
-  orders_by_user = orders.groupby('user_id')
-  def gen_data():
-    for o in orders_by_user:
-      yield o[1]
+    orders = pandas.concat([first_orders, orders, last_orders])
+    orders = orders.sort_values(by=['user_id', 'order_number', 'add_to_cart_order'])
+    orders['add_to_cart_order'] += 1
+    orders = orders.set_index(['user_id', 'add_to_cart_order'])
+    orders = orders[['product_id', 'days_since_first_order', 'order_dow', 'order_hour_of_day']]
+    orders_by_user = orders.groupby('user_id')
+    def gen_data():
+        for o in orders_by_user:
+        yield o[1]
 
-  train_dataset = tf.data.Dataset.from_generator(
-    gen_data, 
-    output_types=(tf.int32), 
-    output_shapes=((None, 4))
-  )
+    train_dataset = tf.data.Dataset.from_generator(
+        gen_data, 
+        output_types=(tf.int32), 
+        output_shapes=((None, 4))
+    )
 
-  bucket_boundaries = [50, 100, 225, 500, 1000, 2000]
-  bucket_batch_sizes = [256, 128, 64, 24, 8, 4, 1]
+    bucket_boundaries = [50, 100, 225, 500, 1000, 2000]
+    bucket_batch_sizes = [256, 128, 64, 24, 8, 4, 1]
 
-  bucketize = tf.data.experimental.bucket_by_sequence_length(lambda  x: tf.size(x) // 4, bucket_boundaries, bucket_batch_sizes)
-  train_dataset = train_dataset.apply(bucketize)
+    bucketize = tf.data.experimental.bucket_by_sequence_length(lambda  x: tf.size(x) // 4, bucket_boundaries, bucket_batch_sizes)
+    train_dataset = train_dataset.apply(bucketize)
   
     def create_inp_tar(inp):
         return (inp[:, :-1]), inp[:, 1:, 0]

@@ -48,8 +48,6 @@ if __name__ == '__main__':
     parser.add_argument('--tensorboard-dir',type=str,default=os.environ.get('SM_MODULE_DIR'))
     parser.add_argument('--weight-decay',type=float,default=2e-4,help='Weight decay for convolutions.')
     parser.add_argument('--learning-rate',type=float,default=0.001,help='Initial learning rate.')
-    parser.add_argument('--epochs',type=int,default=10)
-    parser.add_argument('--batch-size',type=int,default=128)
     parser.add_argument('--data-config',type=json.loads,default=os.environ.get('SM_INPUT_DATA_CONFIG'))
     parser.add_argument('--fw-params',type=json.loads,default=os.environ.get('SM_FRAMEWORK_PARAMS'))
     parser.add_argument('--optimizer',type=str,default='adam')

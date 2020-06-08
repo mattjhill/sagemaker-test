@@ -423,24 +423,8 @@ if __name__ == '__main__':
     output_shapes=((None, 4))
   )
 
-  bucket_boundaries = [
-    50,
-    100,
-    225,
-    500,
-    1000,
-    2000
-  ]
-
-  bucket_batch_sizes = [
-    256,
-    128,
-    64,
-    24,
-    8,
-    4,
-    1
-  ]
+  bucket_boundaries = [50, 100, 225, 500, 1000, 2000]
+  bucket_batch_sizes = [256, 128, 64, 24, 8, 4, 1]
 
   bucketize = tf.data.experimental.bucket_by_sequence_length(lambda  x: tf.size(x) // 4, bucket_boundaries, bucket_batch_sizes)
   train_dataset = train_dataset.apply(bucketize)

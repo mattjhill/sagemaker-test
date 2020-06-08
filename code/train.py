@@ -41,7 +41,7 @@ def main(args):
     orders_by_user = orders.groupby('user_id')
     def gen_data():
         for o in orders_by_user:
-        yield o[1]
+            yield o[1]
 
     train_dataset = tf.data.Dataset.from_generator(
         gen_data, 

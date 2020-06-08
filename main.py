@@ -18,7 +18,7 @@ estimator = TensorFlow(
 #    train_use_spot_instances=True,
 #    train_max_wait=300,
     train_instance_count=1,
-    train_instance_type='ml.c4.2xlarge',
+    train_instance_type='ml.p3.8xlarge',
 )
 
 estimator.fit('s3://knovita-sagemaker/instacart/', wait=True)

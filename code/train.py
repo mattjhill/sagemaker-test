@@ -1,8 +1,14 @@
+import argparse
+import json
+import os
+import tensorflow as tf
+
 def main(args):
     print("running model")
+    print("Num GPUs Available: ", len(tf.config.experimental.list_physical_devices('GPU')))
+
 
 if __name__ == '__main__':
-
     parser = argparse.ArgumentParser()
 
     parser.add_argument('--hosts',type=list,default=json.loads(os.environ.get('SM_HOSTS')))

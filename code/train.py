@@ -134,7 +134,7 @@ def main(args):
     )
 
     model.summary()
-    model.fit(train_dataset, validation_data=val_dataset, epochs=10, verbose=2, callbacks=[model_checkpoint])
+    model.fit(train_dataset, validation_data=val_dataset, epochs=10, verbose=1, callbacks=[model_checkpoint])
 
 
 if __name__ == '__main__':

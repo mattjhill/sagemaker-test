@@ -15,8 +15,9 @@ estimator = TensorFlow(
     entry_point='train.py',
     framework_version='2.1.0',
     py_version='py3',
-#    train_use_spot_instances=True,
-#    train_max_wait=300,
+    train_use_spot_instances=True,
+    train_max_wait=3600,
+    train_max_run=3600,
     train_instance_count=1,
     train_instance_type='ml.p3.8xlarge',
 )

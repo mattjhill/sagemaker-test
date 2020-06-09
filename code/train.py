@@ -3,7 +3,7 @@ import json
 import os
 import pandas
 import tensorflow as tf
-from transformer_instacart import create_decoder_model
+from transformer_instacart import create_decoder_model, CustomSchedule
 
 def main(args):
     print("running model")
@@ -52,6 +52,7 @@ def main(args):
 
     bucket_boundaries = [50, 100, 225, 500, 1000, 2000]
     bucket_batch_sizes = [256, 128, 64, 24, 8, 4, 1]
+    bucket_batch_sizes = [4 * x for x in bucket_batch_sizes]
 
     bucketize = tf.data.experimental.bucket_by_sequence_length(lambda  x: tf.size(x) // 4, bucket_boundaries, bucket_batch_sizes)
     train_dataset = train_dataset.apply(bucketize)

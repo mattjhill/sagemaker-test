@@ -4,6 +4,7 @@ import os
 import pandas
 import tensorflow as tf
 from transformer_instacart import create_decoder_model, CustomSchedule
+import gc
 
 def main(args):
     print("running model")
@@ -39,13 +40,37 @@ def main(args):
     orders['add_to_cart_order'] += 1
     orders = orders.set_index(['user_id', 'add_to_cart_order'])
     orders = orders[['product_id', 'days_since_first_order', 'order_dow', 'order_hour_of_day']]
-    orders_by_user = orders.groupby('user_id')
-    def gen_data():
-        for o in orders_by_user:
+    
+    val_users = orders.reset_index()['user_id'].drop_duplicates().sample(10000)
+    val_orders = orders.reset_index().set_index('user_id').loc[val_users]
+    val_orders = val_orders.reset_index().set_index(['user_id', 'add_to_cart_order'])
+
+    train_orders = orders.reset_index().set_index('user_id').drop(val_users)
+    train_orders = train_orders.reset_index().set_index(['user_id', 'add_to_cart_order'])
+    
+    embedding_sizes = (orders.max().astype(int) + 1).tolist()
+    del orders
+    gc.collect()
+
+    train_orders_by_user = train_orders.groupby('user_id')
+    def gen_train_data():
+        for o in train_orders_by_user:
             yield o[1]
 
     train_dataset = tf.data.Dataset.from_generator(
-        gen_data, 
+        gen_train_data, 
+        output_types=(tf.int32), 
+        output_shapes=((None, 4))
+    )
+
+    val_orders_by_user = val_orders.groupby('user_id')
+    def gen_val_data():
+        for o in val_orders_by_user:
+            yield o[1]
+
+
+    val_dataset = tf.data.Dataset.from_generator(
+        gen_val_data, 
         output_types=(tf.int32), 
         output_shapes=((None, 4))
     )
@@ -56,11 +81,13 @@ def main(args):
 
     bucketize = tf.data.experimental.bucket_by_sequence_length(lambda  x: tf.size(x) // 4, bucket_boundaries, bucket_batch_sizes)
     train_dataset = train_dataset.apply(bucketize)
-  
+    val_dataset = val_dataset.apply(bucketize)
+
     def create_inp_tar(inp):
         return (inp[:, :-1]), inp[:, 1:, 0]
 
     train_dataset = train_dataset.map(create_inp_tar)
+    val_dataset = val_dataset.map(create_inp_tar)
 
     # Define optimization settings
     loss_object = tf.keras.losses.SparseCategoricalCrossentropy(
@@ -80,7 +107,6 @@ def main(args):
     dff = 512
     num_heads = 8
     dropout_rate = 0.1
-    embedding_sizes = (orders.max().astype(int) + 1).tolist()
 
     strategy = tf.distribute.MirroredStrategy()
     with strategy.scope():
@@ -100,15 +126,15 @@ def main(args):
         # except:
         #     print('could not load weights')
 
-        model.compile(loss=loss_function, optimizer="adam", metrics=[tf.keras.metrics.SparseCategoricalAccuracy(name='train_accuracy')])
+        model.compile(loss=loss_function, optimizer=optimizer, metrics=[tf.keras.metrics.SparseCategoricalAccuracy(name='train_accuracy')])
 
     model_checkpoint = tf.keras.callbacks.ModelCheckpoint(
-        f'{args.model_output_dir}/instacart_transformer.weights', monitor='loss', verbose=1, save_best_only=True,
+        f'{args.model_output_dir}/instacart_transformer.weights', monitor='val_loss', verbose=1, save_best_only=True,
         save_weights_only=True, mode='auto', save_freq='epoch'
     )
 
     model.summary()
-    model.fit(train_dataset, epochs=10, callbacks=[model_checkpoint])
+    model.fit(train_dataset, validation_data=val_dataset, epochs=10, verbose=2, callbacks=[model_checkpoint])
 
 
 if __name__ == '__main__':

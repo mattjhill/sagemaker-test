@@ -14,9 +14,9 @@ def main(args):
     products = pandas.read_csv(f'{args.train}/products.csv')
     product_id_max = products['product_id'].max()
 
-    orders_meta = pandas.read_csv('data/orders.csv', index_col='order_id')
+    orders_meta = pandas.read_csv(f'{args.train}/orders.csv', index_col='order_id')
     orders_meta = orders_meta[orders_meta['eval_set'] == 'prior']
-    orders = pandas.read_csv('data/order_products__prior.csv')
+    orders = pandas.read_csv(f'{args.train}/order_products__prior.csv')
     orders_meta['days_since_first_order'] = orders_meta.groupby('user_id')[['days_since_prior_order']].cumsum()
     orders_meta['days_since_first_order'] = orders_meta['days_since_first_order'].fillna(-1)
 
